@@ -1,7 +1,7 @@
 import time
 import xbmc
 import xbmcaddon
-import BaseHTTPServer
+import http.server as BaseHTTPServer
 import httplib
 import threading
 from timeit import default_timer as timer
