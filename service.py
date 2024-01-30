@@ -138,11 +138,11 @@ def pause_master(conn):
     return r.status
 
 def check_resync(diff_ms_allowed, jump_ahead_time, manual_adjust_ms, master_ip, master_port):
-    xbmc.log("Init resync check", level=xbmc.LOGNOTICE)
+    xbmc.log("Init resync check", level=xbmc.INFO)
     if xbmc.Player().isPlaying():
         endpoint = master_ip + ':' + '%d' % (master_port)
         url = '/playback/time'
-        # xbmc.log("Connecting to " + endpoint + url, level=xbmc.LOGNOTICE)
+        # xbmc.log("Connecting to " + endpoint + url, level=xbmc.INFO)
         conn = httplib.HTTPConnection(endpoint)
         curr_master_status = get_master_status(conn)
         self_paused = is_playback_paused()
@@ -172,7 +172,7 @@ def check_resync(diff_ms_allowed, jump_ahead_time, manual_adjust_ms, master_ip, 
         wait_for_getTime1 = 0.05
         min_diff_time = 3.0 * 1.0 / 24 # at least 3 frames
         while (master_time >= 0) and (i < max_resync_loops) and (master_own_time_diff >= (diff_ms_allowed / 1000.0)):
-            xbmc.log("sta %f master %f vs slave %f - %f >= %f?" % (i, own_time, master_time, master_own_time_diff, (diff_ms_allowed / 1000.0)), level=xbmc.LOGNOTICE)
+            xbmc.log("sta %f master %f vs slave %f - %f >= %f?" % (i, own_time, master_time, master_own_time_diff, (diff_ms_allowed / 1000.0)), level=xbmc.INFO)
             # resync
             new_own_time = master_time + jump_ahead_time
             xbmc.Player().seekTime(new_own_time)
@@ -192,7 +192,7 @@ def check_resync(diff_ms_allowed, jump_ahead_time, manual_adjust_ms, master_ip, 
             dur_pause1 += end_pause1 - start_pause1
             cnt_pause1 += 1
             wait_for_pause1 = dur_pause1 / cnt_pause1
-            xbmc.log("mid1 %f own_time %f vs master_time %f - wait_for_pause1 %f" % (i, own_time, master_time, wait_for_pause1), level=xbmc.LOGNOTICE)
+            xbmc.log("mid1 %f own_time %f vs master_time %f - wait_for_pause1 %f" % (i, own_time, master_time, wait_for_pause1), level=xbmc.INFO)
             # waiting by frequently checking against / updating master time
             while (round < max_pause_rounds) and (master_time >= 0) and ((own_time - ((smallest_sleep_time_ms / 1000.0) + wait_for_getTime1) * 2 - wait_for_pause1 - (manual_adjust_ms / 1000.0)) > master_time) and (own_time - master_time > min_diff_time):
                 xbmc.sleep(smallest_sleep_time_ms)
@@ -208,20 +208,20 @@ def check_resync(diff_ms_allowed, jump_ahead_time, manual_adjust_ms, master_ip, 
                 xbmc.sleep(int((own_time - wait_for_pause1 - (manual_adjust_ms / 1000.0) - master_time) * 1000))
             if is_playback_paused():
                 xbmc.Player().pause()
-            xbmc.log("mid2 %f own_time %f vs master_time %f - %f >= %f? - rounds %f - dur_pause1 %f - cnt_pause1 %f - wait_for_pause1 %f - dur_getTime1 %f - cnt_getTime1 %f - wait_for_getTime1 %f - final_wait %f" % (i, own_time, master_time, master_own_time_diff, (diff_ms_allowed / 1000.0), round, dur_pause1,cnt_pause1 , wait_for_pause1, dur_getTime1, cnt_getTime1, wait_for_getTime1, (own_time - wait_for_pause1 - master_time)), level=xbmc.LOGNOTICE)
+            xbmc.log("mid2 %f own_time %f vs master_time %f - %f >= %f? - rounds %f - dur_pause1 %f - cnt_pause1 %f - wait_for_pause1 %f - dur_getTime1 %f - cnt_getTime1 %f - wait_for_getTime1 %f - final_wait %f" % (i, own_time, master_time, master_own_time_diff, (diff_ms_allowed / 1000.0), round, dur_pause1,cnt_pause1 , wait_for_pause1, dur_getTime1, cnt_getTime1, wait_for_getTime1, (own_time - wait_for_pause1 - master_time)), level=xbmc.INFO)
             master_time = get_master_time(conn)
             own_time = xbmc.Player().getTime()
             master_own_time_diff = abs(own_time - master_time)
-            xbmc.log("fin %f own_time %f vs master_time %f - %f >= %f? - rounds %f" % (i, own_time, master_time, master_own_time_diff, (diff_ms_allowed / 1000.0), round), level=xbmc.LOGNOTICE)
+            xbmc.log("fin %f own_time %f vs master_time %f - %f >= %f? - rounds %f" % (i, own_time, master_time, master_own_time_diff, (diff_ms_allowed / 1000.0), round), level=xbmc.INFO)
             # increase accuracy with the first rounds
             # if (i < 1) and (diff_ms_allowed >= 65.0):
             #    diff_ms_allowed = 65
             i += 1
         if master_time < 0:
-            xbmc.log("Cannot connect to " + endpoint, level=xbmc.LOGNOTICE)
+            xbmc.log("Cannot connect to " + endpoint, level=xbmc.INFO)
         conn.close()
     else:
-        xbmc.log("Kodi is not playing", level=xbmc.LOGNOTICE)
+        xbmc.log("Kodi is not playing", level=xbmc.INFO)
 
 if __name__ == '__main__':
     settings = xbmcaddon.Addon(id='service.sync.playback')
@@ -233,11 +233,11 @@ if __name__ == '__main__':
     master_port = int(settings.getSetting('master_port'))
     jump_ahead_time = float(settings.getSetting('jump_ahead_time'))
     manual_adjust_ms = float(settings.getSetting('manual_adjust_ms'))
-    xbmc.log('Starts play-sync the REST server at own_port %d' % own_port,level=xbmc.LOGNOTICE)
+    xbmc.log('Starts play-sync the REST server at own_port %d' % own_port,level=xbmc.INFO)
     http_server = StoppableHTTPServer(('', own_port), MyRequestHandler)
     thread = threading.Thread(None, http_server.run)
     thread.start()
-    xbmc.log('REST server at own_port %d started' % own_port,level=xbmc.LOGNOTICE)
+    xbmc.log('REST server at own_port %d started' % own_port,level=xbmc.INFO)
 
     monitor = xbmc.Monitor()
     
